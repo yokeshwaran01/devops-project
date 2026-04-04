@@ -1,16 +1,20 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = "yokeshwaran01/devops-project"
+    }
+
     stages {
-        stage('Clone Code') {
+        stage('Build Image') {
             steps {
-                echo "Code pulled from GitHub"
+                sh 'docker build -t $DOCKER_IMAGE .'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Push Image') {
             steps {
-                sh 'docker build -t devops-project .'
+                sh 'docker push $DOCKER_IMAGE'
             }
         }
     }
