@@ -1,13 +1,10 @@
-from http.server import SimpleHTTPRequestHandler, HTTPServer
+from flask import Flask
 
-PORT = 8000
+app = Flask(__name__)
 
-class Handler(SimpleHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write("Hello from DevOps Project 🚀".encode())
+@app.route('/')
+def home():
+    return "Hello from DevOps Pipeline 🚀"
 
-with HTTPServer(("", PORT), Handler) as server:
-    print(f"Server running on port {PORT}")
-    server.serve_forever()
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
