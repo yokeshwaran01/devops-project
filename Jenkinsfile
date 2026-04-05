@@ -1,22 +1,44 @@
-stage('Deploy') {
-    steps {
-        sshagent(['deploy-server-key']) {
-            sh '''
-            ssh -o StrictHostKeyChecking=no ubuntu@172.31.72.208 << EOF
+pipeline {
+    agent any
 
-            echo "Pull latest image"
-            docker pull yokeshwaran01/devops-project:latest
+    environment {
+        IMAGE = "yokeshwaran01/devops-project"
+        TAG = "latest"
+        SERVER = "172.31.72.208"
+    }
 
-            echo "Stop old container"
-            docker stop flask-app || true
-            docker rm flask-app || true
+    stages {
 
-            echo "Run new container"
-            docker run -d -p 5000:5000 --name flask-app yokeshwaran01/devops-project:latest
-
-            echo "Deployment done"
-            EOF
-            '''
+        stage('Build Image') {
+            steps {
+                sh 'docker build -t $IMAGE:$TAG .'
+            }
         }
+
+        stage('Push Image') {
+            steps {
+                sh 'docker push $IMAGE:$TAG'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sshagent(['deploy-server-key']) {
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no ubuntu@$SERVER << EOF
+
+                    docker pull $IMAGE:$TAG
+
+                    docker stop flask-app || true
+                    docker rm flask-app || true
+
+                    docker run -d -p 5000:5000 --name flask-app $IMAGE:$TAG
+
+                    EOF
+                    '''
+                }
+            }
+        }
+
     }
 }
