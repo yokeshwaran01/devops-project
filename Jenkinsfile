@@ -4,37 +4,52 @@ pipeline {
     environment {
         IMAGE = "yokeshwaran01/devops-project"
         TAG = "latest"
-        SERVER = "172.31.72.208"
+        SERVER = "18.206.12.143"  // change to your app server IP
     }
 
     stages {
 
         stage('Build Image') {
             steps {
-                sh 'docker build -t $IMAGE:$TAG .'
+                sh "docker build -t ${IMAGE}:${TAG} ."
             }
         }
 
         stage('Push Image') {
             steps {
-                sh 'docker push $IMAGE:$TAG'
+                sh "docker push ${IMAGE}:${TAG}"
             }
         }
 
         stage('Deploy') {
-    steps {
-        sshagent(['ssh-key']) {
-            sh '''
-            ssh -o StrictHostKeyChecking=no ubuntu@18.206.16.49 "
-                docker pull yokeshwaran01/devops-project:latest &&
-                docker stop app || true &&
-                docker rm app || true &&
-                docker run -d -p 5000:5000 --name app yokeshwaran01/devops-project:latest
-	    "
-            '''
-        		}
-    		}
-	}
+            steps {
+                sshagent(['ssh-key']) {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no ubuntu@${SERVER} << 'EOF'
+                        echo "Pulling latest image..."
+                        docker pull ${IMAGE}:${TAG}
+                        
+                        echo "Stopping existing container (if any)..."
+                        docker stop app || true
+                        docker rm app || true
+                        
+                        echo "Running new container..."
+                        docker run -d -p 5000:5000 --name app ${IMAGE}:${TAG}
+                        
+                        echo "Deployment complete!"
+                    EOF
+                    """
+                }
+            }
+        }
+    }
 
+    post {
+        failure {
+            echo "Pipeline failed. Check logs for errors."
+        }
+        success {
+            echo "Pipeline succeeded! Application deployed."
+        }
     }
 }
