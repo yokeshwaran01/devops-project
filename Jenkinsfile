@@ -22,23 +22,19 @@ pipeline {
         }
 
         stage('Deploy') {
-            steps {
-                sshagent(['deploy-server-key']) {
-                    sh '''
-                    ssh -o StrictHostKeyChecking=no ubuntu@$SERVER << EOF
-
-                    docker pull $IMAGE:$TAG
-
-                    docker stop flask-app || true
-                    docker rm flask-app || true
-
-                    docker run -d -p 5000:5000 --name flask-app $IMAGE:$TAG
-
-                    EOF
-                    '''
-                }
-            }
-        }
+    steps {
+        sshagent(['ssh-key']) {
+            sh '''
+            ssh -o StrictHostKeyChecking=no ubuntu@<DEPLOY_SERVER_IP> << EOF
+            docker pull yokeshwaran01/devops-project:latest
+            docker stop app || true
+            docker rm app || true
+            docker run -d -p 5000:5000 --name app yokeshwaran01/devops-project:latest
+            EOF
+            '''
+        		}
+    		}
+	}
 
     }
 }
