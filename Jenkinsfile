@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE = "yokeshwaran01/devops-project"
         TAG = "latest"
-        SERVER = "172.31.71.47"  // change to your app server IP
+        SERVER = "172.31.71.47"  // app server IP
     }
 
     stages {
@@ -25,7 +25,7 @@ pipeline {
             steps {
                 sshagent(['ssh-key']) {
                     sh """
-                    ssh -o StrictHostKeyChecking=no ubuntu@18.206.12.143 << 'EOF'
+                    ssh -o StrictHostKeyChecking=no ubuntu@172.31.72.208 '
                         echo "Pulling latest image..."
                         docker pull ${IMAGE}:${TAG}
                         
@@ -37,7 +37,7 @@ pipeline {
                         docker run -d -p 5000:5000 --name app ${IMAGE}:${TAG}
                         
                         echo "Deployment complete!"
-                    EOF
+                    '
                     """
                 }
             }
