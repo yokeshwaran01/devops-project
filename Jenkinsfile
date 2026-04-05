@@ -25,7 +25,7 @@ pipeline {
     steps {
         sshagent(['ssh-key']) {
             sh '''
-            ssh -o StrictHostKeyChecking=no ubuntu@100.27.234.204 << EOF
+            ssh -o StrictHostKeyChecking=no ubuntu18.206.16.49 << EOF
             docker pull yokeshwaran01/devops-project:latest
             docker stop app || true
             docker rm app || true
